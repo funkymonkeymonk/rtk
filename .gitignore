@@ -1,6 +1,12 @@
 # Build
 /target
 
+# Nix/Devenv
+.devenv/
+.direnv/
+devenv.local.nix
+*.bak.*
+
 # Environment & Secrets
 .env
 .env.*
