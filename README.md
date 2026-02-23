@@ -560,6 +560,7 @@ The hook is included in this repository at `.claude/hooks/rtk-rewrite.sh`. To us
 | Raw Command | Rewritten To |
 |-------------|-------------|
 | `git status/diff/log/add/commit/push/pull/branch/fetch/stash` | `rtk git ...` |
+| `jj status/log/diff/show/new/describe/squash/absorb/rebase` | `rtk jj ...` |
 | `gh pr/issue/run` | `rtk gh ...` |
 | `cargo test/build/clippy` | `rtk cargo ...` |
 | `cat <file>` | `rtk read <file>` |
