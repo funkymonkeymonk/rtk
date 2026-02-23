@@ -209,6 +209,7 @@ rtk gain --history | grep proxy
 | Module | Purpose | Token Strategy |
 |--------|---------|----------------|
 | git.rs | Git operations | Stat summaries + compact diffs |
+| jj.rs | Jujutsu (jj) VCS | Compact status/log/diff, "ok ✓" confirmations (70-90% reduction) |
 | grep_cmd.rs | Code search | Group by file, truncate lines |
 | ls.rs | Directory listing | Tree format, aggregate counts |
 | read.rs | File reading | Filter-level based stripping |

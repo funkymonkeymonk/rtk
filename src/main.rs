@@ -20,6 +20,7 @@ mod golangci_cmd;
 mod grep_cmd;
 mod hook_audit_cmd;
 mod init;
+mod jj;
 mod json_cmd;
 mod learn;
 mod lint_cmd;
@@ -522,6 +523,12 @@ enum Commands {
         command: GoCommands,
     },
 
+    /// Jujutsu (jj) commands with compact output
+    Jj {
+        #[command(subcommand)]
+        command: JjCommands,
+    },
+
     /// golangci-lint with compact output
     #[command(name = "golangci-lint")]
     GolangciLint {
@@ -848,6 +855,95 @@ enum GoCommands {
         args: Vec<String>,
     },
     /// Passthrough: runs any unsupported go subcommand directly
+    #[command(external_subcommand)]
+    Other(Vec<OsString>),
+}
+
+#[derive(Subcommand)]
+enum JjCommands {
+    /// Show working copy status
+    Status {
+        /// jj status arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Show commit log (compact format, limited entries)
+    Log {
+        /// Maximum entries to show
+        #[arg(short = 'n', long)]
+        limit: Option<usize>,
+        /// jj log arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Show diff (stat + compact hunks)
+    Diff {
+        /// jj diff arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Show commit details
+    Show {
+        /// jj show arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Set commit message → "ok ✓"
+    Describe {
+        /// jj describe arguments (-m "message", etc.)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Create new commit → "ok ✓ {change_id}"
+    New {
+        /// jj new arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Squash changes into parent → "ok ✓ squashed"
+    Squash {
+        /// jj squash arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Auto-distribute changes to ancestors → "ok ✓ absorbed N"
+    Absorb {
+        /// jj absorb arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Rebase commits → "ok ✓ rebased N commits"
+    Rebase {
+        /// jj rebase arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Bookmark operations (jj's branches)
+    Bookmark {
+        /// jj bookmark arguments (list, set, delete, etc.)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Git interop (push, fetch, clone)
+    Git {
+        /// jj git arguments (push, fetch, etc.)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Operation log (compact format)
+    #[command(name = "op")]
+    Op {
+        /// jj op arguments (log, undo, etc.)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Undo last operation → "ok ✓ undone"
+    Undo {
+        /// jj undo arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Passthrough: runs any unsupported jj subcommand directly
     #[command(external_subcommand)]
     Other(Vec<OsString>),
 }
@@ -1420,6 +1516,66 @@ fn main() -> Result<()> {
             }
             GoCommands::Other(args) => {
                 go_cmd::run_other(&args, cli.verbose)?;
+            }
+        },
+
+        Commands::Jj { command } => match command {
+            JjCommands::Status { args } => {
+                jj::run(jj::JjCommand::Status, &args, cli.verbose)?;
+            }
+            JjCommands::Log { limit, args } => {
+                jj::run(jj::JjCommand::Log { limit }, &args, cli.verbose)?;
+            }
+            JjCommands::Diff { args } => {
+                jj::run(jj::JjCommand::Diff, &args, cli.verbose)?;
+            }
+            JjCommands::Show { args } => {
+                jj::run(jj::JjCommand::Show, &args, cli.verbose)?;
+            }
+            JjCommands::Describe { args } => {
+                jj::run(jj::JjCommand::Describe, &args, cli.verbose)?;
+            }
+            JjCommands::New { args } => {
+                jj::run(jj::JjCommand::New, &args, cli.verbose)?;
+            }
+            JjCommands::Squash { args } => {
+                jj::run(jj::JjCommand::Squash, &args, cli.verbose)?;
+            }
+            JjCommands::Absorb { args } => {
+                jj::run(jj::JjCommand::Absorb, &args, cli.verbose)?;
+            }
+            JjCommands::Rebase { args } => {
+                jj::run(jj::JjCommand::Rebase, &args, cli.verbose)?;
+            }
+            JjCommands::Bookmark { args } => {
+                jj::run(jj::JjCommand::Bookmark, &args, cli.verbose)?;
+            }
+            JjCommands::Git { args } => {
+                jj::run(jj::JjCommand::Git, &args, cli.verbose)?;
+            }
+            JjCommands::Op { args } => {
+                // Handle `jj op log` or `jj op undo`
+                if args.is_empty() || args[0] == "log" {
+                    jj::run(
+                        jj::JjCommand::OpLog,
+                        &args[1.min(args.len())..],
+                        cli.verbose,
+                    )?;
+                } else if args[0] == "undo" {
+                    jj::run(jj::JjCommand::Undo, &args[1..], cli.verbose)?;
+                } else {
+                    // Passthrough other op subcommands
+                    let os_args: Vec<OsString> = std::iter::once(OsString::from("op"))
+                        .chain(args.iter().map(OsString::from))
+                        .collect();
+                    jj::run_passthrough(&os_args, cli.verbose)?;
+                }
+            }
+            JjCommands::Undo { args } => {
+                jj::run(jj::JjCommand::Undo, &args, cli.verbose)?;
+            }
+            JjCommands::Other(args) => {
+                jj::run_passthrough(&args, cli.verbose)?;
             }
         },
 

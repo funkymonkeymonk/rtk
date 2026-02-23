@@ -86,6 +86,34 @@ elif echo "$MATCH_CMD" | grep -qE '^git[[:space:]]+show([[:space:]]|$)'; then
 elif echo "$MATCH_CMD" | grep -qE '^gh[[:space:]]+(pr|issue|run|api|release)([[:space:]]|$)'; then
   REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^gh /rtk gh /')"
 
+# --- Jujutsu (jj) VCS ---
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+status([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj status/rtk jj status/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+log([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj log/rtk jj log/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+diff([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj diff/rtk jj diff/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+show([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj show/rtk jj show/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+describe([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj describe/rtk jj describe/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+new([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj new/rtk jj new/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+squash([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj squash/rtk jj squash/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+absorb([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj absorb/rtk jj absorb/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+rebase([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj rebase/rtk jj rebase/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+bookmark([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj bookmark/rtk jj bookmark/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+git([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj git/rtk jj git/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+op([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj op/rtk jj op/')"
+elif echo "$MATCH_CMD" | grep -qE '^jj[[:space:]]+undo([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^jj undo/rtk jj undo/')"
+
 # --- Cargo ---
 elif echo "$MATCH_CMD" | grep -qE '^cargo[[:space:]]+test([[:space:]]|$)'; then
   REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^cargo test/rtk cargo test/')"
